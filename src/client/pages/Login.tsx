@@ -15,7 +15,7 @@ export function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl space-y-6">
         <div className="text-center space-y-2">
           <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 mx-auto flex items-center justify-center">
-            <img src="/assets/pai/logo-unusu.jpg" alt="Logo UNUSU" className="w-14 h-14 object-contain" />
+            <img src={import.meta.env.BASE_URL + 'assets/pai/logo-unusu.jpg'} alt="Logo UNUSU" className="w-14 h-14 object-contain" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">LMS UNUSU</h1>
           <p className="text-xs text-slate-500 font-medium">

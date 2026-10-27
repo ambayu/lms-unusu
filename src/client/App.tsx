@@ -45,7 +45,7 @@ function AppShell() {
 export function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/sso/callback" element={<SsoCallbackPage />} />
