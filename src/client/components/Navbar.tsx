@@ -1,14 +1,23 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, User, Calendar, CheckSquare, Layers, LogOut, ExternalLink } from 'lucide-react';
+import { BookOpen, LogOut, ExternalLink } from 'lucide-react';
+import type { SessionUser } from '../services/api';
 
 interface NavbarProps {
   role: 'mahasiswa' | 'dosen';
-  onToggleRole: () => void;
+  user?: SessionUser | null;
+  onLogout?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ role, onToggleRole }) => {
+export const Navbar: React.FC<NavbarProps> = ({ role, user, onLogout }) => {
   const location = useLocation();
+
+  const initials = (user?.nama || '?')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200/80 shadow-xs">
@@ -29,16 +38,11 @@ export const Navbar: React.FC<NavbarProps> = ({ role, onToggleRole }) => {
               </div>
             </Link>
 
-            {/* Portal Role Switcher Badge (Mock) */}
-            <button
-              onClick={onToggleRole}
-              className="ml-4 hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60 hover:bg-emerald-100 transition"
-              title="Klik untuk beralih mode simulasi"
-            >
+            {/* Badge peran dari sesi SSO (tidak bisa diganti manual) */}
+            <span className="ml-4 hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
               <span>Peran:</span>
               <span className="uppercase font-extrabold text-emerald-700">{role}</span>
-              <span className="text-[10px] text-emerald-600 underline ml-1">Ganti</span>
-            </button>
+            </span>
           </div>
 
           {/* Navigation Links */}
@@ -62,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({ role, onToggleRole }) => {
 
             {/* Link back to ONE UNUSU */}
             <a
-              href="http://localhost:5173"
+              href={import.meta.env.VITE_ONE_UNUSU_URL || 'http://localhost:5173'}
               target="_blank"
               rel="noreferrer"
               className="hidden md:flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-emerald-700 hover:bg-slate-50 transition"
@@ -73,17 +77,23 @@ export const Navbar: React.FC<NavbarProps> = ({ role, onToggleRole }) => {
 
             {/* User Profile Pill */}
             <div className="flex items-center space-x-2 pl-3 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                {role === 'mahasiswa' ? 'MF' : 'JD'}
+              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+                {initials}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-800">
-                  {role === 'mahasiswa' ? 'M. Fadhil' : 'Junaidy, M.Kom.'}
-                </p>
-                <p className="text-[10px] text-slate-500">
-                  {role === 'mahasiswa' ? '230101001' : 'NIDN. 0123068901'}
-                </p>
+                <p className="text-xs font-bold text-slate-800">{user?.nama || 'Pengguna'}</p>
+                <p className="text-[10px] text-slate-500">{user?.nim || user?.nidn || user?.username}</p>
               </div>
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  title="Keluar"
+                  className="ml-1 p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </nav>
         </div>
