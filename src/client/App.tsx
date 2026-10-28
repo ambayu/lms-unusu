@@ -42,10 +42,16 @@ function AppShell() {
   );
 }
 
+const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 export function App() {
+  const currentPath = window.location.pathname;
+  const isBaseSubpath = BASE_PATH && currentPath.startsWith(BASE_PATH);
+  const routerBasename = isBaseSubpath ? BASE_PATH : '';
+
   return (
     <AuthProvider>
-      <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+      <Router basename={routerBasename}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/sso/callback" element={<SsoCallbackPage />} />
@@ -57,3 +63,4 @@ export function App() {
 }
 
 export default App;
+

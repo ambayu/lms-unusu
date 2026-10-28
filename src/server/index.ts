@@ -20,6 +20,7 @@ app.use(express.json());
 // Serve static frontend build files in production
 const clientDistPath = path.resolve(process.cwd(), "dist/client");
 app.use(express.static(clientDistPath));
+app.use("/lms", express.static(clientDistPath));
 
 // Health Check
 app.get("/api/health", (req: Request, res: Response) => {
@@ -369,3 +370,4 @@ app.get("*", (req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`🚀 LMS UNUSU Monolith Server running on http://localhost:${PORT}`);
 });
+
