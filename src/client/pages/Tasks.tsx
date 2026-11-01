@@ -1,79 +1,103 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchMahasiswaTasks, ResourceItem } from '../services/api';
-import { CheckSquare, Calendar, Award, Clock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { ListPageTemplate } from '../components/templates/ListPageTemplate';
+import { StatusBadge } from '../components/StatusBadge';
 
 export const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<ResourceItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadTasks = useCallback(() => {
+    setLoading(true);
+    setError(null);
     fetchMahasiswaTasks()
-      .then((res) => setTasks(res.data.data))
-      .catch((err) => console.error(err))
+      .then((res) => setTasks(res.data.data || []))
+      .catch((err) => {
+        setError(
+          err?.response?.data?.message ||
+            'Gagal memuat daftar tugas perkuliahan. Silakan coba lagi.'
+        );
+      })
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Agenda Tugas & Nilai</h1>
-        <p className="text-xs text-slate-500">Daftar penugasan dari seluruh mata kuliah yang sedang berjalan</p>
-      </div>
+    <ListPageTemplate
+      title="Agenda Tugas & Nilai"
+      description="Daftar penugasan dari seluruh mata kuliah yang sedang berjalan"
+      loading={loading}
+      loadingMessage="Memuat daftar tugas perkuliahan..."
+      error={error}
+      onRetry={loadTasks}
+      isEmpty={tasks.length === 0}
+      emptyTitle="Belum Ada Tugas Perkuliahan"
+      emptyMessage="Belum ada instruksi tugas yang diunggah dosen pada semester berjalan."
+    >
+      {tasks.map((t) => {
+        const hasSubmission = Boolean(t.submissions && t.submissions.length > 0);
+        const submission = hasSubmission ? t.submissions![0] : null;
 
-      {loading ? (
-        <div className="p-12 text-center text-slate-400">Memuat daftar tugas...</div>
-      ) : (
-        <div className="space-y-4">
-          {tasks.map((t) => {
-            const hasSubmission = (t.submissions && t.submissions.length > 0);
-            const submission = hasSubmission ? t.submissions![0] : null;
-
-            return (
-              <div
-                key={t.id}
-                className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-              >
-                <div>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">
-                      Pertemuan {t.meeting}
-                    </span>
-                    {hasSubmission ? (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">
-                        Sudah Dikumpulkan
-                      </span>
-                    ) : (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700">
-                        Belum Dikumpulkan
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-base font-bold text-slate-900">{t.title}</h3>
-                  <p className="text-xs text-slate-500 mt-1 max-w-xl">{t.description}</p>
-                </div>
-
-                <div className="flex items-center space-x-6">
-                  {t.dueDate && (
-                    <div className="text-left md:text-right">
-                      <span className="text-[11px] text-slate-400 block">Tenggat Waktu:</span>
-                      <span className="text-xs font-bold text-slate-700">
-                        {new Date(t.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
-                    </div>
-                  )}
-
-                  {submission && submission.score && (
-                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-                      <span className="text-[10px] text-emerald-600 block font-semibold">Nilai Dosen</span>
-                      <span className="text-lg font-black text-emerald-800">{submission.score}</span>
-                    </div>
-                  )}
-                </div>
+        return (
+          <article
+            key={t.id}
+            className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+          >
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge variant="emerald">Pertemuan {t.meeting}</StatusBadge>
+                {hasSubmission ? (
+                  <StatusBadge variant="info">Sudah Dikumpulkan</StatusBadge>
+                ) : (
+                  <StatusBadge variant="warning">Belum Dikumpulkan</StatusBadge>
+                )}
               </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900">{t.title}</h2>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+                {t.description || 'Tidak ada petunjuk tambahan untuk tugas ini.'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 md:gap-6 shrink-0">
+              {t.dueDate && (
+                <div className="text-left md:text-right">
+                  <span className="text-xs text-slate-600 block">Tenggat Waktu:</span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-800 tabular-nums">
+                    {new Date(t.dueDate).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+              )}
+
+              {submission && submission.score !== undefined && submission.score !== null && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-center min-w-[88px]">
+                  <span className="text-xs text-emerald-800 block font-semibold">Nilai Dosen</span>
+                  <span className="text-lg font-black text-emerald-900 tabular-nums">
+                    {submission.score}
+                  </span>
+                </div>
+              )}
+
+              <Link
+                to={`/class/${t.classId}`}
+                className="inline-flex items-center min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-xs font-bold text-slate-700 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 transition"
+              >
+                <span>Buka Kelas</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5" aria-hidden="true" />
+              </Link>
+            </div>
+          </article>
+        );
+      })}
+    </ListPageTemplate>
   );
 };

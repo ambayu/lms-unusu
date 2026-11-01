@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
+  baseURL: import.meta.env?.VITE_API_URL || 'http://localhost:5001/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ api.interceptors.response.use(
 );
 
 export const ssoLogin = (client_id: string, token: string) =>
-  api.post<{ success: boolean; token: string; user: SessionUser }>('/auth/sso', { client_id, token });
+  api.post<{ success: boolean; token: string; user: SessionUser; message?: string }>('/auth/sso', { client_id, token });
 
 export interface ClassItem {
   id: number;

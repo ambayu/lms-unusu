@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { ssoLogin } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { AuthCardTemplate } from '../components/templates/AuthCardTemplate';
 
 /**
  * Callback SSO ONE UNUSU.
@@ -54,18 +55,18 @@ export function SsoCallbackPage() {
   }, [params, saveSession]);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 text-center">
+    <AuthCardTemplate>
+      <div className="text-center">
         {error ? (
           <>
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 mb-4">
-              <ShieldAlert className="w-7 h-7" />
+              <ShieldAlert className="w-7 h-7" aria-hidden="true" />
             </div>
             <h1 className="text-lg font-bold text-slate-900 mb-2">Login SSO Gagal</h1>
             <p className="text-sm text-slate-600 mb-6">{error}</p>
             <Link
               to="/login"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-all"
+              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-3 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 transition-all"
             >
               Kembali ke Halaman Login
             </Link>
@@ -73,19 +74,19 @@ export function SsoCallbackPage() {
         ) : (
           <>
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 mb-4">
-              <Loader2 className="w-7 h-7 animate-spin" />
+              <Loader2 className="w-7 h-7 animate-spin" aria-hidden="true" />
             </div>
             <h1 className="text-lg font-bold text-slate-900 mb-2">Memverifikasi Sesi SSO</h1>
             <p className="text-sm text-slate-600">
-              Mohon tunggu, Malin sedang menghubungkan akun ONE UNUSU Sanak...
+              Mohon tunggu, sistem sedang menghubungkan akun ONE UNUSU Anda...
             </p>
-            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-emerald-700 font-medium">
-              <ShieldCheck className="w-4 h-4" />
-              Token sekali pakai • berlaku 5 menit
+            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-emerald-800 font-medium">
+              <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+              <span>Token sekali pakai • berlaku 5 menit</span>
             </div>
           </>
         )}
       </div>
-    </div>
+    </AuthCardTemplate>
   );
 }

@@ -1,27 +1,52 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Dashboard } from './pages/Dashboard';
 import { ClassDetail } from './pages/ClassDetail';
 import { TasksPage } from './pages/Tasks';
 import { LoginPage } from './pages/Login';
+import { LandingPage } from './pages/Landing';
 import { SsoCallbackPage } from './pages/SsoCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LoadingState } from './components/StateViews';
+
+/**
+ * Helper untuk menentukan default redirect path berdasarkan peran pengguna setelah login
+ */
+export function getDefaultRedirectByRole(role?: string): string {
+  switch (role) {
+    case 'dosen':
+      return '/';
+    case 'mahasiswa':
+      return '/';
+    case 'admin':
+      return '/';
+    default:
+      return '/';
+  }
+}
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
+
   if (loading) {
-    return <div className="p-12 text-center text-slate-500">Memuat sesi...</div>;
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <LoadingState message="Memuat sesi pengguna..." />
+      </div>
+    );
   }
+  // Jangan pernah me-redirect guest ke /admin, arahkan ke login dengan return URL tersimpan
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   return children;
 }
 
 function AppShell() {
   const { user, logout } = useAuth();
-  // Peran ditentukan oleh akun SSO, bukan lagi tombol simulasi di navbar.
+  // Peran ditentukan oleh akun SSO. Admin diperlakukan seperti dosen untuk akses kurikulum/kelas.
   const role: 'mahasiswa' | 'dosen' = user?.role === 'mahasiswa' ? 'mahasiswa' : 'dosen';
 
   return (
@@ -35,14 +60,39 @@ function AppShell() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <p>Ac {new Date().getFullYear()} LMS UNUSU — Ruang Belajar Digital Universitas Nahdlatul Ulama Sumatera Utara</p>
+      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-600">
+        <p>© {new Date().getFullYear()} LMS UNUSU: Ruang Belajar Digital Universitas Nahdlatul Ulama Sumatera Utara</p>
       </footer>
     </div>
   );
 }
 
-const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, '');
+/**
+ * Route handler untuk Root ('/')
+ * Jika sudah login: tampilkan AppShell / Dashboard
+ * Jika belum login (guest): tetap tampilkan Landing Page publik (tanpa me-redirect ke /admin atau /login secara paksa)
+ */
+function RootRoute() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <LoadingState message="Memeriksa sesi..." />
+      </div>
+    );
+  }
+
+  if (user) {
+    return <AppShell />;
+  }
+
+  // Guest melihat public landing page
+  return <LandingPage />;
+}
+
+const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+const BASE_PATH = BASE_URL.replace(/\/$/, '');
 
 export function App() {
   const currentPath = window.location.pathname;
@@ -53,9 +103,39 @@ export function App() {
     <AuthProvider>
       <Router basename={routerBasename}>
         <Routes>
+          {/* Public Landing & Auth Routes */}
+          <Route path="/" element={<RootRoute />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/sso/callback" element={<SsoCallbackPage />} />
-          <Route path="/*" element={<ProtectedRoute><AppShell /></ProtectedRoute>} />
+
+          {/* Authenticated Application Routes */}
+          <Route
+            path="/app/*"
+            element={
+              <ProtectedRoute>
+                <AppShell />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/class/:id"
+            element={
+              <ProtectedRoute>
+                <AppShell />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <AppShell />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
@@ -63,4 +143,3 @@ export function App() {
 }
 
 export default App;
-
