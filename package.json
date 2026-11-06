@@ -17,6 +17,7 @@
     "test:auth": "tsx test_auth_navigation.ts"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^5.20.0",
     "axios": "^1.7.7",
     "clsx": "^2.1.1",

@@ -1,5 +1,16 @@
 # Changelog: LMS UNUSU
 
+## [2026-11-06] — Perbaikan Status Aktif Sidebar
+
+### Fixed
+- **`DashboardPageTemplate`** (`src/client/components/templates/DashboardPageTemplate.tsx`): menu **Kelas Saya** bertarget `/` sebelumnya ikut menyala di **semua** halaman karena `location.pathname === '/'` tidak pernah membedakan rute. Sekarang menu ditandai `end: true`, rute detail kelas (`/class/:id`) dipetakan ke menu Kelas Saya, dan menu lain memakai batas segmen + kecocokan terpanjang.
+
+### Documentation
+- `docs/design-system/PAGE_TEMPLATES.md`: ditambahkan bagian aturan status aktif menu sidebar (`isActive`).
+
+### Verification
+- `tsc --noEmit` — bersih. `vite build` — berhasil.
+
 Seluruh perubahan penting pada kode, sistem desain, dan dokumentasi proyek `lms-unusu` dicatat dalam dokumen ini menggunakan format tanggal ISO (`YYYY-MM-DD`).
 
 ## [2026-10-31]

@@ -59,3 +59,46 @@ Komponen berikut telah diekstrak ke berkas tersendiri di `src/client/components/
 2. **Label & Input Form per Rute**: Dilarang membuat komponen label atau gaya input berbeda-beda di setiap halaman; gunakan satu standar `FormSectionCard` + `FormField`.
 3. **Badge Status dengan Kelas Warna Mentah Acak**: Setelah `StatusBadge` diekstrak, seluruh status tugas (`Sudah Dikumpulkan`, `Belum Dikumpulkan`), kode kelas, dan status kehadiran (`Hadir`, `Izin`, `Sakit`, `Alpa`) wajib memakai `StatusBadge`.
 4. **Instance Pemanggil HTTP**: Dilarang membuat `axios.create` atau `fetch('/api/...')` baru di dalam komponen halaman; tambahkan fungsi endpoint ber-tipe di `src/client/services/api.ts`.
+
+---
+
+## 4. Komponen Laporan & Grafik
+
+### `LaporanCharts` (`src/client/components/LaporanCharts.tsx`)
+- **Tanggung Jawab**: Kumpulan komponen grafik ringkas untuk dashboard panel, dibangun **murni dengan SVG dan CSS** — tanpa library chart eksternal, sehingga ukuran bundle tetap ringan dan tidak menambah dependensi baru.
+- **Alasan tidak memakai library**: grafik dashboard bersifat ringkasan (bukan analitik interaktif), dan palette harus mengikuti warna aplikasi masing-masing.
+- **Komponen yang tersedia**:
+  | Komponen | Kegunaan |
+  | --- | --- |
+  | `ReportCard` | Kartu pembungkus laporan (judul + subjudul + aksi opsional) |
+  | `MetricTile` | Kartu metrik angka besar dengan ikon & aksen warna |
+  | `DonutChart` | Proporsi antar kategori (mis. status surat, kondisi fasilitas) |
+  | `BarChart` | Perbandingan kategori dengan bar horizontal |
+  | `ColumnChart` | Tren per periode dengan kolom vertikal |
+  | `TrendChart` | Tren waktu dengan area lembut (SVG path) |
+  | `StackedBar` | Komposisi satu batang bertingkat |
+  | `GaugeRing` | Capaian persentase tunggal berbentuk cincin |
+  | `ActivityFeed` | Daftar kejadian terbaru bersusun waktu |
+- **Aksesibilitas**: Setiap grafik memakai `role="img"` + `aria-label` yang merangkum datanya; nilai juga tetap ditampilkan sebagai teks sehingga tidak bergantung pada warna saja.
+- **Aturan Pemakaian**: Dashboard setiap aplikasi **wajib** menampilkan laporan/grafik ringkas untuk tiap menu, dan **dilarang** menyertakan panel aksi cepat (tombol pintas tambah/input) di dashboard. Navigasi tetap melalui sidebar.
+
+---
+
+## 5. Komponen Landing Page
+
+### `TentangPlatform` (`src/client/components/TentangPlatform.tsx`)
+- **Tanggung Jawab**: Seksi **Tentang Platform** pada halaman landing dengan pola baku ONE UNUSU: **teks di kiri, gambar di kanan**.
+- **Komposisi kiri**: eyebrow kecil, judul seksi, dua paragraf penjelas, dan tiga poin centang.
+- **Komposisi kanan**: gambar potret dengan latar gradien aksen membulat.
+- **Props**:
+  - `id?`: anchor & `aria-labelledby` id (default `tentang`)
+  - `eyebrow?`: label kecil di atas judul
+  - `title`: judul seksi
+  - `paragraphs?`: array paragraf
+  - `bullets?`: array poin centang
+  - `portraitSrc?`: path gambar potret utama
+  - `fallbackSrc?`: path gambar cadangan
+  - `imageAlt?`: alt text gambar
+  - `accentBg? / accentBorder? / bulletBg? / eyebrowClass?`: penyesuaian warna aksen
+- **Pola Aset Bertahap**: Komponen mencoba `portraitSrc` lebih dulu; bila aset potret belum tersedia (`img.onError`), komponen otomatis memakai `fallbackSrc` sehingga halaman tidak pernah menampilkan gambar rusak. Begitu file potret ditambahkan ke `public/assets/`, tampilan langsung berganti **tanpa mengubah kode**.
+- **Aturan Aset**: Dilarang memakai gambar yang memuat branding institusi lain. Foto suasana kampus resmi UNUSU (`slider1.jpg`) adalah fallback yang sah.

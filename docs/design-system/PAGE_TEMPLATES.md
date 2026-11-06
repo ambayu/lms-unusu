@@ -134,3 +134,15 @@ Jika di masa depan muncul kebutuhan jenis halaman yang benar-benar tidak cocok d
 1. Periksa terlebih dahulu apakah template yang ada (`ListPageTemplate`, `DetailPageTemplate`, atau `FormPageTemplate`) dapat diperluas dengan slot/props opsional tanpa merusak halaman lain.
 2. Jangan membuat template baru hanya karena nama rutenya berbeda. Jika kebutuhannya hanya muncul satu kali di seluruh aplikasi, gunakan komposisi komponen bersama di atas template terdekat.
 3. Jika pola tersebut terbukti dipakai ulang oleh minimal dua rute berbeda, buat komponen templatenya di `src/client/components/templates/`, uji dengan `npx tsc --noEmit` dan `npm run build`, lalu daftarkan tujuan, props, contoh pemakaian, dan batasannya di dokumen `PAGE_TEMPLATES.md` ini serta catat di `CHANGELOG.md`.
+
+---
+
+## Aturan Status Aktif Menu Sidebar (`isActive`)
+
+Semua sidebar panel **wajib** memakai aturan kecocokan yang sama agar tidak pernah ada dua menu aktif sekaligus:
+
+1. **Cocok persis** — `pathname === to` → aktif.
+2. **Cocok batas segmen** — `pathname.startsWith(to + '/')` → kandidat aktif. Dilarang memakai `startsWith(to)` tanpa garis miring, karena `/peran` akan ikut menyala di `/perangkat`.
+3. **Kecocokan terpanjang menang** — bila beberapa menu berbagi prefix yang sama (mis. `/admin` dan `/admin/pengguna`), hanya menu dengan path **terpanjang** yang dianggap aktif.
+4. **Menu ber-`end`** — menu yang menunjuk rute akar (mis. `/` untuk "Kelas Saya") wajib ditandai `end: true` agar tidak menyala di semua halaman. Rute turunannya (mis. `/class/:id`) dipetakan manual ke menu induk.
+5. **Reaktif** — status harus dihitung dari `useLocation()` (bukan `window.location.pathname`), supaya ikut berubah saat navigasi client-side.

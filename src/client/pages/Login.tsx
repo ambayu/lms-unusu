@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { KeyRound, ArrowRight, ShieldCheck } from 'lucide-react';
+import AnimatedFlatSsoLogo from '../components/AnimatedFlatSsoLogo';
 import { AuthCardTemplate } from '../components/templates/AuthCardTemplate';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import { getDefaultRedirectByRole } from '../App';
 
-const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
 const ONE_UNUSU_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ONE_UNUSU_URL) || 'http://localhost:5173';
+const SSO_CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || 'lms-unusu';
 
 export function LoginPage() {
   const { user } = useAuth();
@@ -22,24 +23,22 @@ export function LoginPage() {
     }
   }, [user, navigate, location]);
 
+  /**
+   * Alur SSO v2 ONE UNUSU: minta tiket sekali pakai melalui halaman
+   * `/authorize?client_id=..` di portal. Portal membangun URL callback dari
+   * `urlRedirect` aplikasi, sehingga aplikasi tidak mengirim `redirect_uri`
+   * sendiri dan tidak ada risiko path meleset.
+   */
   const handleSsoLogin = () => {
-    // Autentikasi dipusatkan di ONE UNUSU. Setelah login, pilih aplikasi
-    // "LMS UNUSU" dari portal untuk masuk ke sini.
-    window.location.href = `${ONE_UNUSU_URL}/login`;
+    window.location.href = `${ONE_UNUSU_URL}/authorize?client_id=${encodeURIComponent(SSO_CLIENT_ID)}`;
   };
 
   return (
     <AuthCardTemplate>
       <div className="text-center space-y-2">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 mx-auto flex items-center justify-center">
-          <img
-            src={BASE_URL + 'assets/pai/logo-unusu.jpg'}
-            alt="Logo Universitas Nahdlatul Ulama Sumatera Utara"
-            width={56}
-            height={56}
-            fetchPriority="high"
-            className="w-14 h-14 object-contain"
-          />
+        {/* Logo ONE UNUSU — dapat diklik dan langsung memicu login SSO yang sama dengan tombol. */}
+        <div className="flex justify-center">
+          <AnimatedFlatSsoLogo size={160} onClick={handleSsoLogin} />
         </div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">LMS UNUSU</h1>
         <p className="text-xs text-slate-600 font-medium">
