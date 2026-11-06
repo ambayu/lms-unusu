@@ -35,6 +35,9 @@ export function SsoCallbackPage() {
 
         saveSession(response.data.token, response.data.user);
 
+        // Setelah login SELALU mendarat di dashboard. Untuk lms-unusu, rute
+        // akar '/' sendiri sudah merender Dashboard berdasarkan peran
+        // (lihat RootRoute di App.tsx), jadi cukup arahkan ke BASE_URL.
         if (!cancelled) {
           window.location.replace(import.meta.env.BASE_URL);
         }
