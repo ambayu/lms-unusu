@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { KeyRound, ArrowRight, ShieldCheck } from 'lucide-react';
 import AnimatedFlatSsoLogo from '../components/AnimatedFlatSsoLogo';
+import { SsoLoadingScreen } from '../components/SsoLoadingScreen';
 import { AuthCardTemplate } from '../components/templates/AuthCardTemplate';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +15,10 @@ export function LoginPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // True sejak tombol masuk ditekan hingga browser benar-benar berpindah ke
+  // Portal ONE UNUSU. Dipakai untuk menampilkan layar tunggu penuh.
+  const [redirecting, setRedirecting] = useState(false);
 
   // Jika sudah terautentikasi, alihkan ke fallback redirect sesuai role atau previous route
   useEffect(() => {
@@ -30,8 +35,29 @@ export function LoginPage() {
    * sendiri dan tidak ada risiko path meleset.
    */
   const handleSsoLogin = () => {
-    window.location.href = `${ONE_UNUSU_URL}/authorize?client_id=${encodeURIComponent(SSO_CLIENT_ID)}`;
+    if (redirecting) return;
+    // Hanya menyalakan layar tunggu. Perpindahan ke Portal ONE UNUSU baru
+    // dijalankan oleh `onReady` setelah jeda animasi terlewati, sehingga logo
+    // SSO sempat terlihat utuh alih-alih berkedip sepersekian detik.
+    setRedirecting(true);
   };
+
+  const goToPortal = () => {
+    window.location.href = `${ONE_UNUSU_URL}/login?next=${encodeURIComponent(`/authorize?client_id=${encodeURIComponent(SSO_CLIENT_ID)}`)}`;
+  };
+
+  // Layar tunggu satu halaman penuh selama browser berpindah ke Portal ONE
+  // UNUSU, supaya pengguna tidak menekan tombol masuk berulang kali.
+  if (redirecting) {
+    return (
+      <SsoLoadingScreen
+        title="Menghubungkan ke ONE UNUSU"
+        description="Mengalihkan Anda ke Portal Single Sign-On kampus. Jangan tutup halaman ini."
+        delayMs={1400}
+        onReady={goToPortal}
+      />
+    );
+  }
 
   return (
     <AuthCardTemplate>
