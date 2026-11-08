@@ -134,12 +134,27 @@ app.post("/api/auth/sso", async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, message: ssoPayload?.message || "Verifikasi token SSO gagal" });
     }
 
+    const ssoRoles = Array.isArray((ssoUser as any).roles)
+      ? (ssoUser as any).roles
+      : ssoUser.role
+      ? [ssoUser.role]
+      : [];
+
+    let mappedRole = mapSsoRole(ssoUser.role);
+    if (ssoRoles.includes("SUPERADMIN") || ssoRoles.includes("ADMIN_LMS")) {
+      mappedRole = "admin";
+    } else if (ssoRoles.includes("DOSEN")) {
+      mappedRole = "dosen";
+    } else if (ssoRoles.includes("MAHASISWA")) {
+      mappedRole = "mahasiswa";
+    }
+
     const sessionUser: SsoSession = {
       id: ssoUser.id,
       username: ssoUser.username,
       nama: ssoUser.nama,
       email: ssoUser.email ?? null,
-      role: mapSsoRole(ssoUser.role),
+      role: mappedRole,
       ssoRole: ssoUser.role,
       nim: ssoUser.nim ?? null,
       nidn: ssoUser.nidn ?? null,
@@ -147,9 +162,23 @@ app.post("/api/auth/sso", async (req: Request, res: Response) => {
       fakultas: ssoUser.fakultas ?? null,
     };
 
-    const tokenJwt = jwt.sign(sessionUser, JWT_SECRET, { expiresIn: "7d" });
+    const tokenJwt = jwt.sign(
+      {
+        ...sessionUser,
+        roles: ssoRoles.length > 0 ? ssoRoles : [ssoUser.role],
+      },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    res.json({ success: true, token: tokenJwt, user: sessionUser });
+    res.json({
+      success: true,
+      token: tokenJwt,
+      user: {
+        ...sessionUser,
+        roles: ssoRoles.length > 0 ? ssoRoles : [ssoUser.role],
+      },
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: "Gagal memproses SSO: " + error?.message });
   }
