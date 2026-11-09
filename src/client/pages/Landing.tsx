@@ -21,7 +21,7 @@ const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_UR
 const ONE_UNUSU_URL =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ONE_UNUSU_URL) || 'http://localhost:5173';
 const SSO_CLIENT_ID =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || 'lms-unusu';
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || 'cli_lms_8f3b2a1c';
 
 interface HeroSlide {
   id: string;

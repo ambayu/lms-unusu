@@ -71,8 +71,8 @@ api.interceptors.response.use(
   }
 );
 
-export const ssoLogin = (client_id: string, token: string) =>
-  api.post<{ success: boolean; token: string; user: SessionUser; message?: string }>('/auth/sso', { client_id, token });
+export const ssoLogin = (token: string, client_id?: string) =>
+  api.post<{ success: boolean; token: string; user: SessionUser; message?: string }>('/auth/sso', { client_id: client_id || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || 'cli_lms_8f3b2a1c', token });
 
 export interface ClassItem {
   id: number;

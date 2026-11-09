@@ -58,8 +58,13 @@ Jika terjadi konflik aturan antar-level, hentikan asumsi sepihak, sebutkan kedua
 - `BrowserRouter` di `src/client/App.tsx` menghitung `basename` secara dinamis dari `import.meta.env.BASE_URL`.
 - Semua rujukan aset statis di `public/` dan pengalihan `window.location` wajib menghormati `import.meta.env.BASE_URL` (contoh: `import.meta.env.BASE_URL + 'assets/pai/logo-unusu.jpg'`), bukan hardcoded `/assets/...` yang akan rusak saat dipasang di `/lms/`.
 
-### 5.3 Autentikasi SSO & Hak Akses Peran
+### 5.3 Autentikasi SSO, Multi-Role, & Hak Akses Peran
 - Autentikasi sepenuhnya melalui **SSO ONE UNUSU** (`/login` -> portal eksternal -> `/sso/callback` -> `POST /api/auth/sso`). Dilarang menambahkan form login username/password lokal tanpa keputusan arsitektur (ADR) yang disetujui user.
+- **Dukungan Multi-Role SSO**: Endpoint `POST /api/auth/sso` memproses array `roles` dan single `role` yang diterbitkan SSO Gateway ONE UNUSU untuk memetakan peran internal LMS (`admin`, `dosen`, `mahasiswa`).
+- **Penyelarasan URL Callback (Local Dev vs VPS)**:
+  - Lingkungan lokal: `http://localhost:5174/sso/callback`.
+  - Lingkungan VPS / Produksi: `https://unusu.ac.id/lms/sso/callback`.
+  - Dikelola terpusat dari seeder portal ONE UNUSU melalui `npm run db:sso-dev-urls` / `npm run db:sso-vps-urls`.
 - Peran pengguna ditentukan dari payload JWT sesi SSO (`user.role`: `'mahasiswa'`, `'dosen'`, atau `'admin'`), disimpan pada `localStorage` dengan kunci `lms_unusu_token` dan `lms_unusu_user`. Dilarang mengembalikan tombol switch peran simulasi di UI produksi.
 - Pesan penolakan otorisasi kepada pengguna akhir harus lugas dan aman tanpa membocorkan kode role internal, stack trace, atau rahasia konfigurasi server.
 - *Catatan Teknis Eksisting*: Beberapa pemanggilan API awal di frontend (`fetchMahasiswaClasses(1)`, `fetchDosenClasses(1)`, `enrollmentId: 1` pada `ClassDetail.tsx`) masih meneruskan ID sampel statis `1`. Saat menyentuh fitur terkait data pengguna, selaraskan dengan identitas sesi aktif dari `useAuth()` serta validasi `req.user` di backend.

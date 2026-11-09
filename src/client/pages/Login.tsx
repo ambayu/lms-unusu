@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { getDefaultRedirectByRole } from '../App';
 
 const ONE_UNUSU_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ONE_UNUSU_URL) || 'http://localhost:5173';
-const SSO_CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || 'lms-unusu';
+const SSO_CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || 'cli_lms_8f3b2a1c';
 
 export function LoginPage() {
   const { user } = useAuth();

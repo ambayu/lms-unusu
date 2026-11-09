@@ -36,7 +36,7 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 const SSO_BASE_URL = process.env.SSO_BASE_URL || "http://localhost:5000";
-const SSO_CLIENT_ID = process.env.SSO_CLIENT_ID || "lms-unusu";
+const SSO_CLIENT_ID = process.env.SSO_CLIENT_ID || "cli_lms_8f3b2a1c";
 const SSO_CLIENT_KEY = process.env.SSO_CLIENT_KEY || "";
 
 interface SsoUserPayload {
@@ -109,10 +109,10 @@ app.post("/api/auth/sso", async (req: Request, res: Response) => {
   try {
     const { client_id, token } = req.body ?? {};
 
-    if (!client_id || !token) {
-      return res.status(400).json({ success: false, message: "client_id dan token wajib diisi" });
+    if (!token) {
+      return res.status(400).json({ success: false, message: "token wajib diisi" });
     }
-    if (client_id !== SSO_CLIENT_ID) {
+    if (client_id && client_id !== SSO_CLIENT_ID) {
       return res.status(400).json({ success: false, message: "Client ID tidak cocok dengan aplikasi ini" });
     }
     if (!SSO_CLIENT_KEY) {
@@ -126,7 +126,14 @@ app.post("/api/auth/sso", async (req: Request, res: Response) => {
     });
 
     const ssoPayload = (await ssoResponse.json().catch(() => null)) as
-      | { status?: boolean; message?: string; data?: { user?: SsoUserPayload } }
+      | {
+          status?: boolean;
+          message?: string;
+          data?: {
+            user?: SsoUserPayload;
+            access?: { allowed?: boolean; tingkat?: string[]; permissions?: string[] };
+          };
+        }
       | null;
     const ssoUser = ssoPayload?.data?.user;
 
@@ -139,9 +146,17 @@ app.post("/api/auth/sso", async (req: Request, res: Response) => {
       : ssoUser.role
       ? [ssoUser.role]
       : [];
+    const ssoPermissions = Array.isArray(ssoPayload?.data?.access?.permissions)
+      ? ssoPayload.data.access.permissions
+      : [];
+
+    const isSuperadminAuthority =
+      ssoPermissions.includes("superadmin:access") ||
+      ssoRoles.includes("SUPERADMIN") ||
+      ssoRoles.includes("ADMIN_SSO");
 
     let mappedRole = mapSsoRole(ssoUser.role);
-    if (ssoRoles.includes("SUPERADMIN") || ssoRoles.includes("ADMIN_LMS")) {
+    if (isSuperadminAuthority || ssoRoles.includes("ADMIN_LMS")) {
       mappedRole = "admin";
     } else if (ssoRoles.includes("DOSEN")) {
       mappedRole = "dosen";

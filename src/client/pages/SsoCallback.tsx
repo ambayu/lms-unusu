@@ -17,11 +17,11 @@ export function SsoCallbackPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const clientId = params.get('client_id');
+    const clientId = params.get('client_id') || undefined;
     const token = params.get('token');
 
-    if (!clientId || !token) {
-      setError('Parameter SSO tidak lengkap. Silakan login ulang dari ONE UNUSU.');
+    if (!token) {
+      setError('Parameter SSO tidak lengkap (token tidak ditemukan). Silakan login ulang dari ONE UNUSU.');
       return;
     }
 
@@ -29,7 +29,7 @@ export function SsoCallbackPage() {
 
     (async () => {
       try {
-        const response = await ssoLogin(clientId, token);
+        const response = await ssoLogin(token, clientId);
         if (!response.data?.success) {
           throw new Error(response.data?.message || 'Login SSO gagal');
         }
