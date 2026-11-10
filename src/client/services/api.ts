@@ -72,7 +72,7 @@ api.interceptors.response.use(
 );
 
 export const ssoLogin = (token: string, client_id?: string) =>
-  api.post<{ success: boolean; token: string; user: SessionUser; message?: string }>('/auth/sso', { client_id: client_id || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || 'cli_lms_8f3b2a1c', token });
+  api.post<{ success: boolean; token: string; user: SessionUser; message?: string }>('/auth/sso', { client_id: client_id || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SSO_CLIENT_ID) || '50e3ed28134b379d', token });
 
 export interface ClassItem {
   id: number;

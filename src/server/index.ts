@@ -36,7 +36,7 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 const SSO_BASE_URL = process.env.SSO_BASE_URL || "http://localhost:5000";
-const SSO_CLIENT_ID = process.env.SSO_CLIENT_ID || "cli_lms_8f3b2a1c";
+const SSO_CLIENT_ID = process.env.SSO_CLIENT_ID || "50e3ed28134b379d";
 const SSO_CLIENT_KEY = process.env.SSO_CLIENT_KEY || "";
 
 interface SsoUserPayload {
